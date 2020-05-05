@@ -21,15 +21,25 @@ namespace = 'genome' # str | object name and auth scope, such as for teams and p
 
 def create_job(job_name, sequence_of_interest,file_name, iteration):
     job_metadata = client.V1ObjectMeta(name = job_name, namespace = namespace)
+    job_volume = client.V1Volume(
+            host_path = client.V1HostPathVolumeSource(path = os.getcwd().replace("\\","/").replace("C:", "/c")),
+            name = "genome-volume")
+
+    job_volume_mount = client.V1VolumeMount(
+            mount_path = "/app",
+            name = "genome-volume")
+    
     job_container = client.V1Container(
             name = "genome-job",
             image="genome-job:latest",
-            args = ["--sequence", sequence_of_interest, "--file", file_name, "--cut", "true", "--iteration", str(iteration)],
+            args = ["--sequence", sequence_of_interest, "--file", file_name],
+            volume_mounts=[job_volume_mount],
             image_pull_policy="Never")
     job_template = client.V1PodTemplateSpec(
             metadata=client.V1ObjectMeta(labels={"app": "sample"}),
             spec=client.V1PodSpec(restart_policy="Never", 
-                                  containers=[job_container]))
+                                  containers=[job_container],
+                                  volumes = [job_volume]))
     job_spec = client.V1JobSpec(
             template=job_template,
             backoff_limit=3,
@@ -43,7 +53,7 @@ def create_jobs(sequence, file_name):
     #Create 10 jobs for now.
     #TODO need to split number of jobs based on number of sequences in the amino acid file
     for x in range(1,11):
-        create_job(job_name = f"genome-job{x}", sequence_of_interest = sequence, file_name = file_name, iteration = x)
+        create_job(job_name = f"genome-job{x}", sequence_of_interest = sequence, file_name = f"{file_name}_{x}", iteration = x)
     
     #wait for all jobs to finish
     timeout = time.time() + 60*1   # 3 minutes from now
@@ -55,13 +65,14 @@ def create_jobs(sequence, file_name):
                 break_from_loop = True
                 break
             else:
-                if api_instance.read_namespaced_job_status(f"genome-job{x}", namespace = namespace).status.active == None:
+                status = api_instance.read_namespaced_job_status(f"genome-job{x}", namespace = namespace).status
+                if status.active == None and (status.succeeded == 1):
                     all_finished = True
                 else:
                     all_finished = False
         if break_from_loop:
             break
-    time.sleep(10)
+    #time.sleep()
     for x in range(1,11):
         pod_name = v1.list_namespaced_pod(namespace = namespace , label_selector=f'job-name=genome-job{x}').items[0].metadata.name
         print(v1.read_namespaced_pod_log(namespace = namespace, name = pod_name))
@@ -76,8 +87,9 @@ def main():
     parser.add_argument('-f', '--file', help="File name to be searched, it should exist in the image or a link to a downloadable file should be provided", type=str, default = "influenza_xsmall.faa")
     arguments = parser.parse_args()
 
+    start_time = time.time() #Timing execution
     create_jobs(sequence = arguments.sequence, file_name = arguments.file)
-
+    print("--- %s seconds ---" % (time.time() - start_time))
     #regular_search(sequence_of_interest)
 
 if __name__ == '__main__':

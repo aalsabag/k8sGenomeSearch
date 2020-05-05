@@ -5,6 +5,7 @@ from Bio.Alphabet import generic_dna, generic_protein
 import argparse
 import math
 import os
+import time
 
 sequence_of_interest = Seq("NDVTSLISTTYPYTGPPPMSHGSSTKYTLETIKRTYDYSRTSVEKTSKVFNIPRRKFCNCLEDKDELVKP", generic_protein)
 
@@ -59,7 +60,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--sequence',help="Sequence of proteins ie. NDVTSL", type = str)
     parser.add_argument('-f', '--file', help="Specify file for which to search. It should be in the container or be a downloadable link", type = str, default = "influenza_xsmall.faa", required = False)
-    parser.add_argument('-c', '--cut', help="Should we split the file into 10 files", type = bool, default = True)
+    parser.add_argument('-c', '--cut', help="Should we split the file into 10 files", dest = "cut", action = "store_true")
     parser.add_argument('-i','--iteration', help="If a cut was specified, specify the iteration of the file you want searched", type = int, required = False, default = 1)
     arguments = parser.parse_args()
     #split_file(arguments.file)
@@ -71,10 +72,13 @@ def main():
 
     file_name = arguments.file
     if arguments.cut:
+        print("nah")
         split_file(arguments.file)
         new_file_name = 'small_file_{}_{}'.format(file_name,arguments.iteration)
 
+    start_time = time.time() #Timing execution
     regular_search(seq = arguments.sequence, file_name = file_name)
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 if __name__ == '__main__':
     main()
