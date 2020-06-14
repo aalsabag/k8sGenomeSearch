@@ -43,7 +43,7 @@ def create_job(job_name, sequence_of_interest,file_name, iteration):
     job_spec = client.V1JobSpec(
             template=job_template,
             backoff_limit=3,
-            ttl_seconds_after_finished=60)
+            ttl_seconds_after_finished=180)
     
     body = client.V1Job(metadata = job_metadata, spec = job_spec) # V1Job | 
     field_manager = 'k8sGenomeSearch'
