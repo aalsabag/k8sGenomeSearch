@@ -1,4 +1,4 @@
-# Assessing the Feasability of Parallel Genome Searching of the Influenza Library via Kubernetes Jobs
+# Assessing the Feasibility of Parallel Genome Searching of the Influenza Library via Kubernetes Jobs
 
 I will preface this with a direct quote from the kubernetes documentation on parallel jobs.
 >The Job object is **not** designed to support closely-communicating parallel processes, as commonly found in scientific computing. It does support parallel processing of a set of independent but related work items.
