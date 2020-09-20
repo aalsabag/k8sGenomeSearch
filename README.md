@@ -112,7 +112,7 @@ ID: gi|1566525237|gb|QBA17735|polymerase
 ```
 We wait for all pods to complete before printing out the log of each pod so that we may maintain order.
 
-Essentially this is a hack to allow for parallel searching through jobs with minimal communication. Ok now to do this the proper way! Check out my argo repo!
+Essentially this is a hack to allow for parallel searching through jobs with minimal communication. Ok now to do this the proper way! Check out my [ArgoGenomeSearch project](https://github.com/aalsabag/argoGenomeSearch)!
 
 ## How to use
 1. Ensure you have python3 and a local kubernetes instance running either via minikube or docker-for-desktop.
